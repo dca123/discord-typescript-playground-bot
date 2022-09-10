@@ -1,8 +1,12 @@
 // Require the necessary discord.js classes
 import { Client, GatewayIntentBits, Events } from "discord.js";
 import { token } from "../config.json";
-import { parse, Syntax } from "@textlint/markdown-to-ast";
-import { compressToEncodedURIComponent } from "lz-string";
+import { parse } from "@textlint/markdown-to-ast";
+import {
+  getBotMessage,
+  getCodeblocks,
+  getTypescriptPlaygroundUrl,
+} from "./lib";
 
 // Create a new client instance
 const client = new Client({
@@ -19,30 +23,24 @@ client.once("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
+  //Ensure the message is not from the bot
   if (message.author.id === client.user?.id) {
     return;
   }
 
-  const result = parse(message.content);
-  const codeblocks = result.children
-    .filter((node: any) => node.type === Syntax.CodeBlock)
-    .map((node: any) => node.value);
+  const ast = parse(message.content);
+  const codeblocks = getCodeblocks(ast.children);
 
   if (codeblocks.length > 0) {
     const code = codeblocks.join("\n");
-    const compressed = compressToEncodedURIComponent(code);
-    console.log(`https://www.typescriptlang.org/play?#code/${compressed}`);
+    const url = getTypescriptPlaygroundUrl(code);
+    const botMessage = getBotMessage(url);
 
     const thread = await message.startThread({
-      name: "TypeScript Playground",
+      name: `${message.author.username}'s Playground`,
     });
 
-    const botMessage =
-      "Here is a link to the TypeScript Playground with your code \n";
-
-    thread.send(
-      botMessage + `https://www.typescriptlang.org/play?#code/${compressed}`
-    );
+    thread.send(botMessage);
   }
 });
 
