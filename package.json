@@ -18,6 +18,8 @@
     "start": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "dependencies": {
+    "@textlint/markdown-to-ast": "^12.2.1",
+    "discord.js": "^14.3.0",
     "lz-string": "^1.4.4"
   }
 }
