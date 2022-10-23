@@ -1,8 +1,9 @@
 // Require the necessary discord.js classes
-import { Client, GatewayIntentBits, Events } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder } from "discord.js";
 import { token } from "../config.json";
 import { parse } from "@textlint/markdown-to-ast";
 import {
+  createEmbed,
   getBotMessage,
   getCodeblocks,
   getTypescriptPlaygroundUrl,
@@ -28,19 +29,21 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
+  console.log({ message });
+
   const ast = parse(message.content);
   const codeblocks = getCodeblocks(ast.children);
 
   if (codeblocks.length > 0) {
     const code = codeblocks.join("\n");
     const url = getTypescriptPlaygroundUrl(code);
-    const botMessage = getBotMessage(url);
 
     const thread = await message.startThread({
       name: `${message.author.username}'s Playground`,
     });
+    const embed = createEmbed(url);
 
-    thread.send(botMessage);
+    thread.send({ embeds: [embed] });
   }
 });
 
